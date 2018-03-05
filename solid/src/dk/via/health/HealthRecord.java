@@ -4,13 +4,21 @@ import java.util.ArrayList;
 
 public class HealthRecord {
 	private ArrayList<Measurement> measurements;
+	private ArrayList<MeasurementObserver> observers;
 	
 	public HealthRecord() {
 		measurements = new ArrayList<>();
+		observers = new ArrayList<>();
+	}
+	
+	public void addObserver(MeasurementObserver observer) {
+		observers.add(observer);
 	}
 	
 	public void addMeasurement(Measurement measurement) {
 		measurements.add(measurement);
+		for (MeasurementObserver observer: observers)
+			observer.notify(measurement);
 	}
 	
 	public ArrayList<Measurement> getByType(Type type) {
