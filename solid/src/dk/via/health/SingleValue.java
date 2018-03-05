@@ -1,6 +1,6 @@
 package dk.via.health;
 
-public class SingleValue extends Measurement {
+public class SingleValue implements Measurement {
 	private double value;
 	private Type type;
 	

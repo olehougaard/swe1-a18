@@ -1,6 +1,6 @@
 package dk.via.health;
 
-public class Cholestorol extends Measurement {
+public class Cholestorol implements Measurement {
 	private double ldl;
 	private double hdl;
 	private double total;

@@ -1,6 +1,6 @@
 package dk.via.health;
 
-public class BloodPressure extends Measurement {
+public class BloodPressure implements Measurement {
 	private double systolic;
 	private double diastolic;
 
