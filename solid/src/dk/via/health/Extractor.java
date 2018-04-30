@@ -32,7 +32,8 @@ public class Extractor {
 	public List<Double> extractDiastolic() {
 		List<Double> values = new ArrayList<>();
 		for(int i = 0; i < measurements.size(); i++)
-			values.add(((BloodPressure) measurements.get(i)).getDiastolic());
+			if (measurements.get(i) instanceof BloodPressure)
+				values.add(((BloodPressure) measurements.get(i)).getDiastolic());
 		return values;
 	}
 	
