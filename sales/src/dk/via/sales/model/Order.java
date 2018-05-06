@@ -1,10 +1,13 @@
 package dk.via.sales.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Order {
+public class Order implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private String currency;
 	private HashMap<Item, OrderLine> orderLines;
 	private int id;

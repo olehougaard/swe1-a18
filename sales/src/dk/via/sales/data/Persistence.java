@@ -4,8 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import dk.via.sales.model.Customer;
@@ -19,7 +20,7 @@ public class Persistence extends DataAccessObject {
 	}
 
 	public List<Customer> getCustomers(String sql, Object... values) throws SQLException {
-		List<Customer> customers = new LinkedList<>();
+		List<Customer> customers = new ArrayList<>();
 		try (Connection connection = getConnection()) {
 			try (PreparedStatement statement = connection.prepareStatement(sql)) {
 				for (int i = 0; i < values.length; i++) { 
@@ -97,27 +98,27 @@ public class Persistence extends DataAccessObject {
 				}
 			}
 		}
-		return new LinkedList<>(orders.values());
+		return new ArrayList<>(orders.values());
 	}
 	
-	public Order createOrderForCustomer(Customer customer, Order order) throws SQLException {
+	public Order createOrderForCustomer(Customer customer, String currency, Collection<OrderLine> lines) throws SQLException {
 		try(Connection connection = getConnection()) {
 			// We're making a lot of (potentially, but at least 2) inserts into the database. These needs to be in a transaction, because they belong together.
 			connection.setAutoCommit(false);
 			// Note that the order_number of Orders is SERIAL. That is, it's auto-generated. In order to return the correct number to the client, 
 			// we need to get it from the database. That's what the RETURN_GENERATED_KEYS is about.
 			try(PreparedStatement statement = connection.prepareStatement("INSERT INTO Orders(currency, customer) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS)) {
-				statement.setString(1, order.getCurrency());
+				statement.setString(1, currency);
 				statement.setString(2, customer.getEmail());
 				statement.executeUpdate();
 				// This is where we actually get the generated key (there should be exactly one).
 				ResultSet keys = statement.getGeneratedKeys();
 				if (keys.next()) {
 					// To allow the client to work with the correct id, we return a fully correct Order. 
-					Order newOrder = new Order(keys.getInt(0), order.getCurrency());
+					Order newOrder = new Order(keys.getInt(1), currency);
 					// We prepare to insert all the order lines. The INSERT statement is the same, we just need to insert different values every time. 
 					try(PreparedStatement orderLineStatement = connection.prepareStatement("INSERT INTO Order_Line(order_number, item_number, amount) VALUES (?, ?, ?)")) {
-						for(OrderLine orderLine: order.getLines()) {
+						for(OrderLine orderLine: lines) {
 							orderLineStatement.setInt(1, newOrder.getId());
 							orderLineStatement.setInt(2, orderLine.getItem().getItemNumber());
 							orderLineStatement.setInt(3, orderLine.getAmount());
@@ -136,5 +137,19 @@ public class Persistence extends DataAccessObject {
 			return null;
 		}
 		// When the connection closes, everything is rolled back if we didn't commit. This means that we don't risk having part of an order in the system.
+	}
+	
+	public List<Item> getItems() throws SQLException {
+		List<Item> items = new ArrayList<Item>();
+		try(Connection connection = getConnection()) {
+			try(PreparedStatement statement = connection.prepareStatement("SELECT * FROM Item")) {
+				ResultSet rs = statement.executeQuery();
+				while(rs.next()) {
+					Money price = new Money(rs.getDouble("price_amount"), rs.getString("price_currency"));
+					items.add(new Item(rs.getInt("item_number"), rs.getString("name"), price));
+				}
+			}
+		}
+		return items;
 	}
 }

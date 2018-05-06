@@ -1,3 +1,7 @@
+CREATE SCHEMA sales;
+
+SET search_path TO sales;
+
 CREATE TABLE Item (
 	item_number SERIAL PRIMARY KEY,
 	name VARCHAR(50) NOT NULL,
@@ -22,3 +26,13 @@ CREATE TABLE Order_Line (
 	amount INTEGER NOT NULL,
 	PRIMARY KEY (order_number, item_number)
 );
+
+
+-- Test data
+
+INSERT INTO Item(name, price_amount, price_currency)
+VALUES ('Scissors', 12.00, 'USD'),
+       ('Hammer', 24.00, 'USD'),
+       ('Screwdriver', 14.95, 'USD');
+
+INSERT INTO Customer(name, email) VALUES ('Ole Hougaard', 'oih@via.dk');

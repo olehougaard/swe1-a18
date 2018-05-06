@@ -1,6 +1,10 @@
 package dk.via.sales.model;
 
-public class Item {
+import java.io.Serializable;
+
+public class Item implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private int itemNumber;
 	private String name;
 	private Money price;

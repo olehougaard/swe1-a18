@@ -1,6 +1,10 @@
 package dk.via.sales.model;
 
-public class OrderLine {
+import java.io.Serializable;
+
+public class OrderLine implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private int amount;
 	private Item item;
 	

@@ -1,6 +1,10 @@
 package dk.via.sales.model;
 
-public class Money {
+import java.io.Serializable;
+
+public class Money implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	public static final Money ZERO = new Money(0, "");
 	private double amount;
 	private String currency;

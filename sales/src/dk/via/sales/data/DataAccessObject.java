@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import org.postgresql.Driver;
 
 public abstract class DataAccessObject {
-	private static String JDBC_URL = "jdbc:postgresql//localhost/postgres?currentSchema=sales";
+	private static String JDBC_URL = "jdbc:postgresql://localhost/postgres?currentSchema=sales";
 	
 	public DataAccessObject() throws SQLException {
 		DriverManager.registerDriver(new Driver());
