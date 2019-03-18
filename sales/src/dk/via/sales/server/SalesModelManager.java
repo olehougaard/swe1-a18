@@ -1,4 +1,4 @@
-package dk.via.server;
+package dk.via.sales.server;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -6,23 +6,19 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
-import dk.via.sales.data.Persistence;
+import dk.via.sales.data.SalesPersistence;
 import dk.via.sales.model.Customer;
 import dk.via.sales.model.Item;
+import dk.via.sales.model.Money;
 import dk.via.sales.model.Order;
 import dk.via.sales.model.OrderLine;
 
 public class SalesModelManager extends UnicastRemoteObject implements SalesModel {
 	private static final long serialVersionUID = 1L;
-	private Persistence persistence;
+	private SalesPersistence persistence;
 
-	protected SalesModelManager() throws RemoteException {
-		try {
-			this.persistence = new Persistence();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RemoteException(e.getMessage(), e);
-		}
+	protected SalesModelManager(SalesPersistence persistence) throws RemoteException {
+		this.persistence = persistence;
 	}
 
 	@Override
@@ -95,6 +91,16 @@ public class SalesModelManager extends UnicastRemoteObject implements SalesModel
 			throw new RemoteException(e.getMessage(), e);
 		}
 	}
+	
+	@Override 
+	public Item createItem(String name, Money price) throws RemoteException {
+		try {
+			return persistence.createItem(name, price);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RemoteException(e.getMessage(), e);
+		}
+	}
 
 	@Override
 	public List<Item> getItems() throws RemoteException {
@@ -105,5 +111,4 @@ public class SalesModelManager extends UnicastRemoteObject implements SalesModel
 			throw new RemoteException(e.getMessage(), e);
 		}
 	}
-
 }

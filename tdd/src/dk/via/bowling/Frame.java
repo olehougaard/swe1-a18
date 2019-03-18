@@ -32,4 +32,15 @@ public class Frame {
 		else
 			return scores[0] + scores[1] + scores[2];
 	}
+	
+	public int getRemainingPins() {
+		if (roll == 0)
+			return 10;
+		else if (roll == 1 && scores[0] < 10)
+			return 10 - scores[0];
+		else if (isUnscored())
+			return 10;
+		else
+			return 0;
+	}
 }

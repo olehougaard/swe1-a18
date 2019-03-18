@@ -18,7 +18,9 @@ import dk.via.sales.model.Customer;
 import dk.via.sales.model.Item;
 import dk.via.sales.model.OrderLine;
 
-public class OrderGui extends JFrame {
+public class OrderGui extends JFrame implements View {
+	private static final long serialVersionUID = 1L;
+
 	private JLabel customerLabel;
 	private JList<String> itemList;
 	private JList<String> orderLineList;
@@ -59,15 +61,18 @@ public class OrderGui extends JFrame {
 		});
 	}
 	
+	@Override
 	public void setController(Controller controller) {
 		this.controller = controller;
 	}
 	
-	public void setCustomer(Customer customer) {
+	@Override
+	public void displayCustomer(Customer customer) {
 		customerLabel.setText(String.format("%s (%s)", customer.getName(), customer.getEmail()));
 	}
 	
-	public void setItems(List<Item> items) {
+	@Override
+	public void displayItems(List<Item> items) {
 		ArrayList<String> itemTexts = new ArrayList<>();
 		for(Item item: items) {
 			itemTexts.add(String.format("%s, %s", item.getName(), item.getPrice().toString()));
@@ -75,7 +80,8 @@ public class OrderGui extends JFrame {
 		itemList.setModel(new CollectionListModel<String>(itemTexts));
 	}
 	
-	public void setOrderLines(List<OrderLine> lines) {
+	@Override
+	public void displayOrderLines(List<OrderLine> lines) {
 		ArrayList<String> lineTexts = new ArrayList<>();
 		for(OrderLine line: lines) {
 			lineTexts.add(String.format("%d %s", line.getAmount(), line.getItem().getName()));
@@ -83,10 +89,12 @@ public class OrderGui extends JFrame {
 		orderLineList.setModel(new CollectionListModel<String>(lineTexts));
 	}
 
+	@Override
 	public int getItemIndex() {
 		return itemList.getSelectedIndex();
 	}
 
+	@Override
 	public void displayException(Exception e) {
 		JOptionPane.showMessageDialog(this, e, "Error", JOptionPane.ERROR_MESSAGE);
 	}

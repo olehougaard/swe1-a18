@@ -14,6 +14,11 @@ public class BowlingScore {
 	}
 	
 	public void roll(int pins)  {
+		if (currentFrame >= frames.length) {
+			throw new IllegalStateException("Game over");
+		} else if (pins < 0 || pins > frames[currentFrame].getRemainingPins()) {
+			throw new IllegalArgumentException("Negative pins");
+		}
 		for(int i = 0; i < currentFrame; i++) {
 			if (frames[i].isUnscored())
 				frames[i].roll(pins);

@@ -117,11 +117,54 @@ public class BowlingScoreTest {
 	@Test
 	public void extraThrowsWithSpareLastFrame() {
 		BowlingScore game1 = new BowlingScore(1);
+		game1.roll(7);
+		game1.roll(3);
+		assertEquals(1, game1.getCurrentFrame());
+		game1.roll(10);
+		assertEquals(2, game1.getCurrentFrame());
+		assertEquals(20, game1.getScore());
+	}
+	
+	@Test
+	public void twoExtraThrowsWithStrikeLastFrame() {
+		BowlingScore game1 = new BowlingScore(1);
 		game1.roll(10);
 		assertEquals(1, game1.getCurrentFrame());
 		game1.roll(10);
 		game1.roll(10);
 		assertEquals(2, game1.getCurrentFrame());
 		assertEquals(30, game1.getScore());
+	}
+	
+	@Test
+	public void maxScoreIs300() {
+		for(int i = 1; i <= 12; i++) {
+			game.roll(10);
+		}
+		assertEquals(300, game.getScore());
+	}
+	
+	@Test(expected=IllegalStateException.class)
+	public void itsIllegalToThrowPastFinalFrame() {
+		BowlingScore game1 = new BowlingScore(1);
+		game1.roll(7);
+		game1.roll(2);
+		game1.roll(10);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void itsIllegalToThrowNegativePins() {
+		game.roll(-1);
+	}
+	
+	@Test(expected=IllegalArgumentException.class) 
+	public void itsIllegalToThrowMoreThan10Pins() {
+		game.roll(11);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void itsIllegalToThrowMoreThanRemainingPins() {
+		game.roll(7);
+		game.roll(4);
 	}
 }

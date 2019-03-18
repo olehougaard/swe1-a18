@@ -15,11 +15,11 @@ import dk.via.sales.model.Money;
 import dk.via.sales.model.Order;
 import dk.via.sales.model.OrderLine;
 
-public class Persistence extends DataAccessObject {
+public class Persistence extends DataAccessObject implements SalesPersistence {
 	public Persistence() throws SQLException {
 	}
 
-	public List<Customer> getCustomers(String sql, Object... values) throws SQLException {
+	private List<Customer> getCustomers(String sql, Object... values) throws SQLException {
 		List<Customer> customers = new ArrayList<>();
 		try (Connection connection = getConnection()) {
 			try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -35,10 +35,18 @@ public class Persistence extends DataAccessObject {
 		return customers;
 	}
 
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#getCustomers()
+	 */
+	@Override
 	public List<Customer> getCustomers() throws SQLException {
 		return getCustomers("SELECT * FROM Customer");
 	}
 
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#getCustomerByEmail(java.lang.String)
+	 */
+	@Override
 	public Customer getCustomerByEmail(String email) throws SQLException {
 		List<Customer> customers = getCustomers("SELECT * FROM Customer WHERE email = ?", email);
 		if (customers.isEmpty())
@@ -47,6 +55,10 @@ public class Persistence extends DataAccessObject {
 			return customers.get(0);
 	}
 	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#createCustomer(dk.via.sales.model.Customer)
+	 */
+	@Override
 	public void createCustomer(Customer customer) throws SQLException {
 		try(Connection connection = getConnection()) {
 			try(PreparedStatement statement = connection.prepareStatement("INSERT INTO Customer(email, name) VALUES (?, ?)")) {
@@ -57,6 +69,10 @@ public class Persistence extends DataAccessObject {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#updateCustomer(dk.via.sales.model.Customer)
+	 */
+	@Override
 	public void updateCustomer(Customer customer) throws SQLException {
 		try(Connection connection = getConnection()) {
 			try(PreparedStatement statement = connection.prepareStatement("UPDATE Customer SET name = ? WHERE email = ?")) {
@@ -67,6 +83,10 @@ public class Persistence extends DataAccessObject {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#deleteCustomer(dk.via.sales.model.Customer)
+	 */
+	@Override
 	public void deleteCustomer(Customer customer) throws SQLException {
 		try(Connection connection = getConnection()) {
 			try(PreparedStatement statement = connection.prepareStatement("DELETE FROM Customer WHERE email = ?")) {
@@ -76,6 +96,10 @@ public class Persistence extends DataAccessObject {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#getOrdersForCustomer(dk.via.sales.model.Customer)
+	 */
+	@Override
 	public List<Order> getOrdersForCustomer(Customer customer) throws SQLException {
 		HashMap<Integer, Order> orders = new HashMap<>();
 		HashMap<Integer, Item> items = new HashMap<>();
@@ -101,6 +125,10 @@ public class Persistence extends DataAccessObject {
 		return new ArrayList<>(orders.values());
 	}
 	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#createOrderForCustomer(dk.via.sales.model.Customer, java.lang.String, java.util.Collection)
+	 */
+	@Override
 	public Order createOrderForCustomer(Customer customer, String currency, Collection<OrderLine> lines) throws SQLException {
 		try(Connection connection = getConnection()) {
 			// We're making a lot of (potentially, but at least 2) inserts into the database. These needs to be in a transaction, because they belong together.
@@ -134,11 +162,37 @@ public class Persistence extends DataAccessObject {
 					return newOrder;
 				}
 			}
-			return null;
 		}
 		// When the connection closes, everything is rolled back if we didn't commit. This means that we don't risk having part of an order in the system.
+		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#createItem(java.lang.String, dk.via.sales.model.Money)
+	 */
+	@Override
+	public Item createItem(String name, Money price) throws SQLException {
+		try(Connection connection = getConnection()) {
+			try(PreparedStatement statement = connection.prepareStatement("INSERT INTO Item(name, price_amount, price_currency) VALUES (?, ?, ?)", 
+					PreparedStatement.RETURN_GENERATED_KEYS)) {
+				statement.setString(1, name);
+				statement.setDouble(2, price.getAmount());
+				statement.setString(3, price.getCurrency());
+				statement.executeUpdate();
+				// This is where we actually get the generated key (there should be exactly one).
+				ResultSet keys = statement.getGeneratedKeys();
+				if (keys.next()) {
+					return new Item(keys.getInt(1), name, price);
+				}
+			}
+		}
+		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see dk.via.sales.data.SalesPersitence#getItems()
+	 */
+	@Override
 	public List<Item> getItems() throws SQLException {
 		List<Item> items = new ArrayList<Item>();
 		try(Connection connection = getConnection()) {
